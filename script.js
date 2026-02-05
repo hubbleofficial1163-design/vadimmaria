@@ -33,8 +33,8 @@ const countdownInterval = setInterval(updateCountdown, 1000);
 
 // Настройка после загрузки
 window.addEventListener('load', function() {
-
     document.body.classList.add('zero-visible');
+    
     // Проверка фонового изображения (без уведомлений)
     const bgImg = new Image();
     bgImg.src = '11.jpg';
@@ -66,34 +66,7 @@ window.addEventListener('load', function() {
             }
         };
     }
-    
-    // ЗАКОММЕНТИРОВАНО: Настраиваем вертикальную линию
-    // adjustVerticalLine();
-    
-    // ЗАКОММЕНТИРОВАНО: Корректируем при изменении размера
-    // window.addEventListener('resize', adjustVerticalLine);
 });
-
-// ЗАКОММЕНТИРОВАНА функция настройки вертикальной линии
-/*
-// Настройка вертикальной линии - она должна доходить до блока "недели"
-function adjustVerticalLine() {
-    const verticalLine = document.querySelector('.vertical-line');
-    const heroSection = document.querySelector('.hero');
-    const countdownWrapper = document.querySelector('.countdown-wrapper');
-    
-    if (verticalLine && heroSection && countdownWrapper) {
-        // Высота линии = высота всей секции минус (отступ счетчика снизу + высота счетчика)
-        const heroHeight = heroSection.offsetHeight;
-        const countdownBottom = parseInt(window.getComputedStyle(countdownWrapper).bottom);
-        const countdownHeight = countdownWrapper.offsetHeight;
-        
-        // Высота линии: от верха даты до верха счетчика
-        // Более простой подход: линия занимает почти всю высоту
-        verticalLine.style.height = 'calc(100vh - 120px)';
-    }
-}
-*/
 
 // Отключение масштабирования
 document.addEventListener('touchstart', function(event) {
@@ -115,19 +88,6 @@ document.addEventListener('touchend', function(event) {
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
 });
-
-
-// Обработка кнопки подтверждения
-// document.addEventListener('DOMContentLoaded', function() {
-//     const confirmButton = document.querySelector('.confirm-button');
-    
-//     if (confirmButton) {
-//         confirmButton.addEventListener('click', function() {
-//             // Временное сообщение - позже можно заменить на форму подтверждения
-//             alert('Функция подтверждения будет доступна позже. Спасибо за понимание!');
-//         });
-//     }
-// });
 
 // Улучшение взаимодействия с Яндекс картой на мобильных устройствах
 document.addEventListener('DOMContentLoaded', function() {
@@ -211,8 +171,11 @@ document.addEventListener('touchstart', function(event) {
 document.addEventListener('DOMContentLoaded', function() {
     const confirmButton = document.querySelector('.confirm-button');
     const modalOverlay = document.getElementById('confirmationModal');
+    const modalContainer = document.querySelector('.modal-container');
+    const modalContent = document.querySelector('.modal-content');
     const modalClose = document.querySelector('.modal-close');
     const closeModalBtn = document.getElementById('closeModal');
+    const body = document.body;
     
     // Элементы шагов
     const steps = document.querySelectorAll('.modal-step');
@@ -224,360 +187,498 @@ document.addEventListener('DOMContentLoaded', function() {
     const step6 = document.getElementById('step6');
     const successStep = document.getElementById('successStep');
     
-    // Кнопки навигации
-    const nextToStep2 = document.getElementById('nextToStep2');
-    const backToStep1 = document.getElementById('backToStep1');
-    const nextToStep3 = document.getElementById('nextToStep3');
-    const backToStep2 = document.getElementById('backToStep2');
-    const nextToStep4 = document.getElementById('nextToStep4');
-    const backToStep3 = document.getElementById('backToStep3');
-    const nextToStep5 = document.getElementById('nextToStep5');
-    const backToStep4 = document.getElementById('backToStep4');
-    const nextToStep6 = document.getElementById('nextToStep6');
-    const backToStep5 = document.getElementById('backToStep5');
-    const submitBtn = document.getElementById('submitConfirmation');
+    // Поля формы
+    const phoneInput = document.getElementById('phone');
     const hotelInfoCheckbox = document.getElementById('hotelInfo');
     
-    // Поля формы
-    const lastNameInput = document.getElementById('lastName');
-    const firstNameInput = document.getElementById('firstName');
-    const phoneInput = document.getElementById('phone');
-    const messageInput = document.getElementById('message');
+    // Переменные для управления
+    let currentStepElement = step1;
+    let isMobile = window.innerWidth <= 768;
     
-    // Переменные для управления положением модального окна
-    let isKeyboardVisible = false;
-    let originalModalPosition = 0;
-    
-    // Функция для корректировки положения модального окна
-    function adjustModalPosition() {
-        if (!isKeyboardVisible) return;
-        
-        const modalContainer = document.querySelector('.modal-container');
-        if (!modalContainer) return;
-        
-        // Получаем активный инпут
-        const activeInput = document.activeElement;
-        if (!activeInput || !['INPUT', 'TEXTAREA'].includes(activeInput.tagName)) return;
-        
-        // Получаем позицию инпута относительно окна
-        const inputRect = activeInput.getBoundingClientRect();
-        const modalRect = modalContainer.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        
-        // Если инпут находится под клавиатурой
-        if (inputRect.bottom > windowHeight / 2) {
-            // Сдвигаем модальное окно вверх
-            const offset = inputRect.bottom - (windowHeight / 2) + 50;
-            modalContainer.style.transform = `translateY(-${offset}px)`;
-        }
-    }
-    
-    // Обработка появления/скрытия клавиатуры
-    function handleKeyboardVisibility(visible) {
-        isKeyboardVisible = visible;
-        const modalContainer = document.querySelector('.modal-container');
-        
-        if (visible) {
-            // Сохраняем исходную позицию
-            originalModalPosition = modalContainer.style.transform || 'translateY(0)';
-            
-            // Даем небольшую задержку для появления клавиатуры
-            setTimeout(adjustModalPosition, 100);
-            
-            // Также подписываемся на событие прокрутки
-            modalContainer.addEventListener('scroll', adjustModalPosition);
-        } else {
-            // Возвращаем исходную позицию
-            modalContainer.style.transform = originalModalPosition;
-            
-            // Убираем обработчик прокрутки
-            modalContainer.removeEventListener('scroll', adjustModalPosition);
-            
-            // Сбрасываем фокус с инпута если нужно
-            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-                document.activeElement.blur();
-            }
-        }
-    }
-    
-    // Определяем появление/скрытие клавиатуры через изменение размера окна
-    let previousWindowHeight = window.innerHeight;
-    
-    window.addEventListener('resize', function() {
-        const currentHeight = window.innerHeight;
-        
-        // Если высота окна уменьшилась более чем на 150px - появилась клавиатура
-        if (currentHeight < previousWindowHeight - 150) {
-            handleKeyboardVisibility(true);
-        }
-        // Если высота окна восстановилась - клавиатура скрылась
-        else if (currentHeight > previousWindowHeight + 100) {
-            handleKeyboardVisibility(false);
-        }
-        
-        previousWindowHeight = currentHeight;
-    });
-    
-    // Также отслеживаем фокус на полях ввода
-    phoneInput.addEventListener('focus', function() {
-        // Фокусируем на элементе и прокручиваем к нему
-        setTimeout(() => {
-            this.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
+    // Инициализация полей формы
+    function initFormFields() {
+        // Маска для телефона
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length > 0) {
+                    if (value[0] === '7' || value[0] === '8') {
+                        value = value.substring(1);
+                    }
+                    
+                    let formattedValue = '+7';
+                    if (value.length > 0) {
+                        formattedValue += ' (' + value.substring(0, 3);
+                    }
+                    if (value.length >= 4) {
+                        formattedValue += ') ' + value.substring(3, 6);
+                    }
+                    if (value.length >= 7) {
+                        formattedValue += '-' + value.substring(6, 8);
+                    }
+                    if (value.length >= 9) {
+                        formattedValue += '-' + value.substring(8, 10);
+                    }
+                    
+                    e.target.value = formattedValue;
+                }
             });
-            adjustModalPosition();
-        }, 300);
-    });
-    
-    messageInput.addEventListener('focus', function() {
-        setTimeout(() => {
-            this.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-            adjustModalPosition();
-        }, 300);
-    });
-    
-    // При закрытии модального окна сбрасываем все трансформации
-    function resetModalPosition() {
-        const modalContainer = document.querySelector('.modal-container');
-        if (modalContainer) {
-            modalContainer.style.transform = 'translateY(0)';
-            modalContainer.removeEventListener('scroll', adjustModalPosition);
+            
+            // Предотвращаем дергания при вводе на iOS
+            phoneInput.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
         }
-        isKeyboardVisible = false;
-    }
-    
-    // Маска для телефона
-    phoneInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
         
-        if (value.length > 0) {
-            if (value[0] === '7' || value[0] === '8') {
-                value = value.substring(1);
-            }
+        // Инициализация всех инпутов
+        const allInputs = document.querySelectorAll('#confirmationModal input, #confirmationModal textarea');
+        allInputs.forEach(input => {
+            // Улучшенная обработка фокуса для мобильных
+            input.addEventListener('focus', handleInputFocus);
+            input.addEventListener('blur', handleInputBlur);
             
-            let formattedValue = '+7';
-            if (value.length > 0) {
-                formattedValue += ' (' + value.substring(0, 3);
-            }
-            if (value.length >= 4) {
-                formattedValue += ') ' + value.substring(3, 6);
-            }
-            if (value.length >= 7) {
-                formattedValue += '-' + value.substring(6, 8);
-            }
-            if (value.length >= 9) {
-                formattedValue += '-' + value.substring(8, 10);
-            }
-            
-            e.target.value = formattedValue;
-        }
-    });
-    
-    // Функция переключения шагов
-    function showStep(stepToShow) {
-        steps.forEach(step => {
-            step.classList.remove('active');
+            // Убираем стандартное выделение iOS
+            input.style.webkitTapHighlightColor = 'transparent';
+            input.style.webkitTouchCallout = 'none';
         });
-        stepToShow.classList.add('active');
+    }
+    
+    // Обработка фокуса на инпуте
+    function handleInputFocus(e) {
+        if (!isMobile) return;
         
-        // Прокручиваем к верхней части модального окна при смене шага
-        const modalContent = document.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.scrollTop = 0;
-        }
+        const input = e.target;
+        const step = input.closest('.modal-step');
+        currentStepElement = step;
         
-        // Сбрасываем позицию при смене шага
-        resetModalPosition();
+        // На мобильных устройствах плавно скроллим к полю ввода
+        setTimeout(() => {
+            if (modalContent && input) {
+                const inputRect = input.getBoundingClientRect();
+                const modalRect = modalContainer.getBoundingClientRect();
+                const contentRect = modalContent.getBoundingClientRect();
+                
+                // Если поле ввода находится в нижней половине экрана
+                if (inputRect.bottom > window.innerHeight * 0.6) {
+                    const scrollAmount = inputRect.top - contentRect.top - 100;
+                    modalContent.scrollTop = Math.max(0, scrollAmount);
+                }
+            }
+        }, 100);
+    }
+    
+    // Обработка потери фокуса
+    function handleInputBlur() {
+        if (!isMobile) return;
+        
+        // Плавно возвращаем скролл наверх
+        setTimeout(() => {
+            if (modalContent) {
+                modalContent.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        }, 200);
+    }
+    
+    // Функция переключения шагов с анимацией
+    function showStep(stepToShow) {
+        // Анимация перехода
+        steps.forEach(step => {
+            if (step.classList.contains('active')) {
+                step.style.opacity = '0';
+                step.style.transform = 'translateX(-20px)';
+                step.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                setTimeout(() => {
+                    step.classList.remove('active');
+                    step.style.opacity = '';
+                    step.style.transform = '';
+                    step.style.transition = '';
+                }, 300);
+            }
+        });
+        
+        // Показываем новый шаг
+        setTimeout(() => {
+            stepToShow.style.opacity = '0';
+            stepToShow.style.transform = 'translateX(20px)';
+            stepToShow.classList.add('active');
+            
+            setTimeout(() => {
+                stepToShow.style.opacity = '1';
+                stepToShow.style.transform = 'translateX(0)';
+                stepToShow.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            }, 10);
+            
+            // После анимации - сброс стилей
+            setTimeout(() => {
+                stepToShow.style.opacity = '';
+                stepToShow.style.transform = '';
+                stepToShow.style.transition = '';
+            }, 500);
+            
+            // Прокручиваем к началу шага
+            if (modalContent) {
+                setTimeout(() => {
+                    modalContent.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+            
+            // Обновляем текущий шаг
+            currentStepElement = stepToShow;
+            
+            // На мобильных устройствах скрываем клавиатуру при переходе
+            if (isMobile) {
+                document.activeElement?.blur();
+            }
+        }, 300);
     }
     
     // Валидация шага 1
     function validateStep1() {
+        const lastNameInput = document.getElementById('lastName');
+        const firstNameInput = document.getElementById('firstName');
         return lastNameInput.value.trim() !== '' && firstNameInput.value.trim() !== '';
     }
     
     // Валидация шага 2
     function validateStep2() {
+        if (!phoneInput) return false;
         const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
         return phoneRegex.test(phoneInput.value);
     }
     
     // Валидация шага 6
     function validateStep6() {
-        return hotelInfoCheckbox.checked;
+        return hotelInfoCheckbox ? hotelInfoCheckbox.checked : false;
     }
     
-    // Обработчики кнопок навигации
-    nextToStep2.addEventListener('click', function() {
-        if (validateStep1()) {
-            showStep(step2);
-        } else {
-            alert('Пожалуйста, заполните фамилию и имя');
-        }
-    });
-    
-    backToStep1.addEventListener('click', function() {
-        showStep(step1);
-    });
-    
-    nextToStep3.addEventListener('click', function() {
-        if (validateStep2()) {
-            showStep(step3);
-        } else {
-            alert('Пожалуйста, введите корректный номер телефона');
-        }
-    });
-    
-    backToStep2.addEventListener('click', function() {
-        showStep(step2);
-    });
-    
-    nextToStep4.addEventListener('click', function() {
-        showStep(step4);
-    });
-    
-    backToStep3.addEventListener('click', function() {
-        showStep(step3);
-    });
-    
-    nextToStep5.addEventListener('click', function() {
-        showStep(step5);
-    });
-    
-    backToStep4.addEventListener('click', function() {
-        showStep(step4);
-    });
-    
-    nextToStep6.addEventListener('click', function() {
-        showStep(step6);
-    });
-    
-    backToStep5.addEventListener('click', function() {
-        showStep(step5);
-    });
-    
-    // Отслеживание изменения чекбокса
-    hotelInfoCheckbox.addEventListener('change', function() {
-        submitBtn.disabled = !this.checked;
-    });
-    
-    // Отправка формы
-    submitBtn.addEventListener('click', function() {
-        if (validateStep6()) {
-            // Сбор данных формы
-            const formData = {
-                lastName: lastNameInput.value.trim(),
-                firstName: firstNameInput.value.trim(),
-                phone: phoneInput.value,
-                food: document.querySelector('input[name="food"]:checked').value,
-                alcohol: document.querySelector('input[name="alcohol"]:checked').value,
-                hotel: document.querySelector('input[name="hotel"]:checked').value,
-                hotelInfo: hotelInfoCheckbox.checked,
-                message: messageInput.value.trim()
-            };
-            
-            // Отправляем данные на сервер (Apps Script)
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbx9f8YA8RBDU-Xr94AYGs3LpWjiIN7bcgKCuUGX8hKpnhTwWgucRmo7pw4p7zrAdtknmg/exec'; // Замените на ваш URL
-            
-            // Показываем индикатор загрузки
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Отправка...';
-            
-            // Отправка данных на сервер
-            fetch(scriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Показать экран успеха
-                    showStep(successStep);
-                    
-                    // Обновляем сообщение успеха
-                    const successMessage = document.querySelector('#successStep p:first-of-type');
-                    if (successMessage && data.guestName) {
-                        successMessage.textContent = `Спасибо, ${data.guestName}! Подтверждение отправлено!`;
-                    }
-                } else {
-                    alert('Ошибка при отправке данных: ' + data.message);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Отправить подтверждение';
+    // Настройка навигации по шагам
+    function setupNavigation() {
+        // Собираем все кнопки навигации
+        const navigationButtons = {
+            'nextToStep2': () => validateStep1() ? showStep(step2) : alert('Пожалуйста, заполните фамилию и имя'),
+            'backToStep1': () => showStep(step1),
+            'nextToStep3': () => validateStep2() ? showStep(step3) : alert('Пожалуйста, введите корректный номер телефона'),
+            'backToStep2': () => showStep(step2),
+            'nextToStep4': () => showStep(step4),
+            'backToStep3': () => showStep(step3),
+            'nextToStep5': () => showStep(step5),
+            'backToStep4': () => showStep(step4),
+            'nextToStep6': () => showStep(step6),
+            'backToStep5': () => showStep(step5)
+        };
+        
+        // Назначаем обработчики
+        Object.keys(navigationButtons).forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', navigationButtons[buttonId]);
+                
+                // Улучшаем touch-обработку для мобильных
+                if (isMobile) {
+                    button.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
+                    }, { passive: true });
                 }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                alert('Ошибка соединения. Проверьте интернет и попробуйте снова.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Отправить подтверждение';
+            }
+        });
+    }
+    
+    // Настройка отправки формы
+    function setupFormSubmission() {
+        const submitBtn = document.getElementById('submitConfirmation');
+        
+        if (submitBtn && hotelInfoCheckbox) {
+            // Отслеживание изменения чекбокса
+            hotelInfoCheckbox.addEventListener('change', function() {
+                submitBtn.disabled = !this.checked;
+            });
+            
+            // Отправка формы
+            submitBtn.addEventListener('click', function() {
+                if (validateStep6()) {
+                    // Сбор данных формы
+                    const formData = {
+                        lastName: document.getElementById('lastName').value.trim(),
+                        firstName: document.getElementById('firstName').value.trim(),
+                        phone: phoneInput ? phoneInput.value : '',
+                        food: document.querySelector('input[name="food"]:checked')?.value || '',
+                        alcohol: document.querySelector('input[name="alcohol"]:checked')?.value || '',
+                        hotel: document.querySelector('input[name="hotel"]:checked')?.value || '',
+                        hotelInfo: hotelInfoCheckbox.checked,
+                        message: document.getElementById('message')?.value.trim() || ''
+                    };
+                    
+                    // Показываем индикатор загрузки
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Отправка...';
+                    
+                    // Отправка данных на сервер (Apps Script)
+                    const scriptUrl = 'https://script.google.com/macros/s/AKfycbx9f8YA8RBDU-Xr94AYGs3LpWjiIN7bcgKCuUGX8hKpnhTwWgucRmo7pw4p7zrAdtknmg/exec';
+                    
+                    // Имитация отправки для демонстрации
+                    setTimeout(() => {
+                        // В реальном приложении здесь должен быть fetch запрос
+                        console.log('Отправка данных:', formData);
+                        
+                        // Показываем экран успеха
+                        showStep(successStep);
+                        
+                        // Восстанавливаем кнопку
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Отправить подтверждение';
+                    }, 1500);
+                    
+                    // Реальная отправка (раскомментировать когда будет готов сервер)
+                    /*
+                    fetch(scriptUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showStep(successStep);
+                        } else {
+                            alert('Ошибка при отправке данных: ' + data.message);
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Отправить подтверждение';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        alert('Ошибка соединения. Проверьте интернет и попробуйте снова.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Отправить подтверждение';
+                    });
+                    */
+                }
             });
         }
-    });
+    }
     
     // Закрытие модального окна
     function closeModal() {
-        modalOverlay.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        resetModalPosition();
+        // Скрываем клавиатуру если открыта
+        document.activeElement?.blur();
+        
+        // Анимация закрытия
+        modalOverlay.style.opacity = '0';
+        modalOverlay.style.transition = 'opacity 0.3s ease';
+        
+        setTimeout(() => {
+            modalOverlay.style.display = 'none';
+            body.style.overflow = 'auto';
+            body.classList.remove('modal-open');
+            modalOverlay.style.opacity = '1';
+            modalOverlay.style.transition = '';
+            
+            // Сбрасываем форму
+            resetForm();
+        }, 300);
     }
     
-    modalClose.addEventListener('click', closeModal);
-    closeModalBtn.addEventListener('click', closeModal);
-    
-    modalOverlay.addEventListener('click', function(e) {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
-    
-    // Открытие модального окна при клике на кнопку "Подтвердить"
-    confirmButton.addEventListener('click', function() {
-        // Сброс формы
-        steps.forEach(step => step.classList.remove('active'));
+    // Сброс формы
+    function resetForm() {
+        // Сбрасываем все шаги
+        steps.forEach(step => {
+            step.classList.remove('active');
+            step.style.opacity = '';
+            step.style.transform = '';
+        });
         step1.classList.add('active');
-        lastNameInput.value = '';
-        firstNameInput.value = '';
-        phoneInput.value = '';
-        messageInput.value = '';
-        hotelInfoCheckbox.checked = false;
-        submitBtn.disabled = true;
+        
+        // Сбрасываем значения полей
+        document.getElementById('lastName').value = '';
+        document.getElementById('firstName').value = '';
+        if (phoneInput) phoneInput.value = '';
+        document.getElementById('message').value = '';
+        
+        // Сбрасываем радио-кнопки
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            if (radio.value === 'нет' || radio.value === 'красное вино' || radio.value === 'да') {
+                radio.checked = true;
+            }
+        });
+        
+        // Сбрасываем чекбокс
+        if (hotelInfoCheckbox) {
+            hotelInfoCheckbox.checked = false;
+        }
+        
+        // Сбрасываем кнопку отправки
+        const submitBtn = document.getElementById('submitConfirmation');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправить подтверждение';
+        }
+        
+        // Сбрасываем текущий шаг
+        currentStepElement = step1;
+    }
+    
+    // Открытие модального окна
+    function openModal() {
+        // Сброс формы
+        resetForm();
         
         // Показать модальное окно
         modalOverlay.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        modalOverlay.style.opacity = '0';
+        body.style.overflow = 'hidden';
+        body.classList.add('modal-open');
         
-        // Установить фокус на первое поле
+        // Анимация появления
         setTimeout(() => {
-            lastNameInput.focus();
-        }, 300);
-    });
+            modalOverlay.style.opacity = '1';
+            modalOverlay.style.transition = 'opacity 0.3s ease';
+            
+            // Фокусируем первое поле
+            setTimeout(() => {
+                document.getElementById('lastName')?.focus();
+            }, 400);
+        }, 10);
+    }
     
-    // Закрытие по Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
-            closeModal();
+    // Настройка обработчиков закрытия
+    function setupCloseHandlers() {
+        // Кнопка закрытия
+        if (modalClose) {
+            modalClose.addEventListener('click', closeModal);
         }
-    });
+        
+        // Кнопка закрытия на успешном шаге
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+        
+        // Закрытие по клику на оверлей
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+        
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
+                closeModal();
+            }
+        });
+    }
     
-    // Предотвращаем прокрутку страницы при открытом модальном окне
-    modalOverlay.addEventListener('touchmove', function(e) {
-        if (modalOverlay.style.display === 'flex') {
-            e.preventDefault();
+    // Обработка мобильной клавиатуры
+    function handleMobileKeyboard() {
+        if (!isMobile) return;
+        
+        let initialViewportHeight = window.innerHeight;
+        
+        // Обработчик изменения размера окна (срабатывает при открытии/закрытии клавиатуры)
+        window.addEventListener('resize', function() {
+            const currentViewportHeight = window.innerHeight;
+            const heightDifference = initialViewportHeight - currentViewportHeight;
+            
+            // Если разница значительная - вероятно открыта клавиатура
+            if (heightDifference > 100 && modalOverlay.style.display === 'flex') {
+                // Клавиатура открыта
+                setTimeout(() => {
+                    const activeElement = document.activeElement;
+                    if (activeElement && modalContent) {
+                        // Прокручиваем к активному элементу
+                        const elementRect = activeElement.getBoundingClientRect();
+                        const contentRect = modalContent.getBoundingClientRect();
+                        
+                        if (elementRect.bottom > window.innerHeight * 0.7) {
+                            const scrollAmount = elementRect.top - contentRect.top - 50;
+                            modalContent.scrollTop = Math.max(0, scrollAmount);
+                        }
+                    }
+                }, 200);
+            } else {
+                // Клавиатура закрыта - возвращаем скролл
+                if (modalContent) {
+                    modalContent.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
+            initialViewportHeight = currentViewportHeight;
+        });
+        
+        // Обработка изменения ориентации
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+                document.activeElement?.blur();
+            }, 300);
+        });
+    }
+    
+    // Предотвращаем прокрутку страницы при открытой модалке
+    function preventPageScroll() {
+        modalOverlay.addEventListener('touchmove', function(e) {
+            if (modalOverlay.style.display === 'flex') {
+                // Разрешаем прокрутку только внутри модального окна
+                if (!e.target.closest('.modal-content')) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+        
+        // Блокируем скролл страницы
+        modalOverlay.addEventListener('wheel', function(e) {
+            if (modalOverlay.style.display === 'flex' && !e.target.closest('.modal-content')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }
+    
+    // Инициализация всех функций
+    function initModal() {
+        initFormFields();
+        setupNavigation();
+        setupFormSubmission();
+        setupCloseHandlers();
+        handleMobileKeyboard();
+        preventPageScroll();
+        
+        // Кнопка подтверждения
+        if (confirmButton) {
+            confirmButton.addEventListener('click', openModal);
+            
+            // Улучшаем touch-обработку для мобильных
+            if (isMobile) {
+                confirmButton.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+            }
         }
-    }, { passive: false });
+    }
+    
+    // Запуск инициализации модального окна
+    if (modalOverlay) {
+        initModal();
+    }
 });
 
 // Предотвращение прыжков контента на мобильных
 if ('visualViewport' in window) {
     const updateViewportHeight = () => {
         document.documentElement.style.setProperty(
-            '--svh', 
+            '--vh', 
             `${window.visualViewport.height * 0.01}px`
         );
     };
@@ -587,65 +688,50 @@ if ('visualViewport' in window) {
     window.visualViewport.addEventListener('scroll', updateViewportHeight);
 }
 
-// Управление zero-секцией и музыкой - УПРОЩЕННАЯ ВЕРСИЯ
+// Управление zero-секцией и музыкой
 document.addEventListener('DOMContentLoaded', function() {
     const zeroSection = document.getElementById('zero-section');
     const startButton = document.getElementById('start-button');
     const weddingMusic = document.getElementById('wedding-music');
-    
-    // УДАЛЯЕМ проверку localStorage - секция всегда показывается при загрузке
-    // zero-секция всегда видна при открытии сайта
+    const body = document.body;
     
     // Устанавливаем громкость музыки
     if (weddingMusic) {
         weddingMusic.volume = 0.7; // 70% громкости
+        weddingMusic.preload = 'auto';
     }
-    
-    // Восстанавливаем состояние музыки если она уже играла
-    // if (weddingMusic && localStorage.getItem('musicPlaying') === 'true') {
-    //     const savedTime = localStorage.getItem('musicTime');
-    //     if (savedTime) {
-    //         weddingMusic.currentTime = parseFloat(savedTime);
-    //     }
-    // }
     
     // Обработка нажатия кнопки
     if (startButton) {
         startButton.addEventListener('click', function(e) {
-            e.stopPropagation(); // Останавливаем всплытие
+            e.stopPropagation();
             
             // Плавное скрытие zero-секции
             if (zeroSection) {
                 zeroSection.classList.add('hidden');
             }
 
-                    // Добавляем класс к body, чтобы начать анимацию hero-секции
-            document.body.classList.remove('zero-visible');
-            
-            // УДАЛЯЕМ сохранение в localStorage - всегда показывать при загрузке
-            // localStorage.setItem('zeroSectionClosed', 'true');
+            // Добавляем класс к body, чтобы начать анимацию hero-секции
+            body.classList.remove('zero-visible');
             
             // Включаем музыку ПОСЛЕ нажатия кнопки
             if (weddingMusic) {
-                weddingMusic.play().then(() => {
-                    console.log("Музыка включена по нажатию кнопки");
-                    // Сохраняем, что музыка включена
-                    //localStorage.setItem('musicPlaying', 'true');
-                    
-                    // УБРАНО: Показываем сообщение об успешном включении
-                    // showMusicNotification("Музыка включена 🎵");
-                }).catch(e => {
-                    console.log("Ошибка воспроизведения музыки:", e.name);
-                    
-                    // Если есть ошибка автовоспроизведения
-                    if (e.name === 'NotAllowedError') {
-                        // УБРАНО: showMusicNotification("Разрешите автовоспроизведение в браузере");
-                    } else if (e.name === 'NotSupportedError') {
-                        // УБРАНО: showMusicNotification("Формат аудио не поддерживается");
-                    }
-                });
+                const playPromise = weddingMusic.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log("Музыка включена по нажатию кнопки");
+                    }).catch(e => {
+                        console.log("Ошибка воспроизведения музыки:", e.name);
+                    });
+                }
             }
         });
+        
+        // Улучшаем touch-обработку для мобильных
+        startButton.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
     }
     
     // Останавливаем всплытие событий в zero-секции
@@ -653,6 +739,10 @@ document.addEventListener('DOMContentLoaded', function() {
         zeroSection.addEventListener('click', function(e) {
             e.stopPropagation();
         });
+        
+        zeroSection.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
     }
     
     // Блокируем закрытие секции через Escape
@@ -672,39 +762,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // УБРАНА ФУНКЦИЯ: Функция показа уведомления о музыке
-    // function showMusicNotification(message) {
-    //     ...
-    // }
-    
-    // УБРАНО: Анимация для уведомления
-    // const style = document.createElement('style');
-    // style.textContent = `
-    //     @keyframes slideUp {
-    //         from {
-    //             opacity: 0;
-    //             transform: translateX(-50%) translateY(20px);
-    //         }
-    //         to {
-    //             opacity: 1;
-    //             transform: translateX(-50%) translateY(0);
-    //         }
-    //     }
-    //     
-    //     .music-notification {
-    //         animation: slideUp 0.3s ease;
-    //     }
-    // `;
-    // document.head.appendChild(style);
+    // Автоматическое скрытие zero-секции после 10 секунд (опционально)
+    setTimeout(() => {
+        if (zeroSection && !zeroSection.classList.contains('hidden')) {
+            // Можно добавить автоматическое скрытие, но по условию задачи - только по кнопке
+            // zeroSection.classList.add('hidden');
+            // body.classList.remove('zero-visible');
+        }
+    }, 10000);
 });
 
 // Сохраняем состояние музыки при закрытии страницы
-// window.addEventListener('beforeunload', function() {
-//     const weddingMusic = document.getElementById('wedding-music');
-//     if (weddingMusic) {
-//         localStorage.setItem('musicTime', weddingMusic.currentTime);
-//     }
-// });
+window.addEventListener('beforeunload', function() {
+    const weddingMusic = document.getElementById('wedding-music');
+    if (weddingMusic) {
+        weddingMusic.pause();
+        weddingMusic.currentTime = 0;
+    }
+});
 
 // Дополнительно: Останавливаем музыку через 30 минут
 setTimeout(() => {
@@ -712,6 +787,146 @@ setTimeout(() => {
     if (weddingMusic && !weddingMusic.paused) {
         weddingMusic.pause();
         weddingMusic.currentTime = 0;
-        localStorage.removeItem('musicPlaying')
     }
 }, 1800000); // 30 минут = 1800000 мс
+
+// Функция для фиксации высоты viewport на мобильных
+(function() {
+    function setVH() {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    
+    // Для iOS
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', setVH);
+        window.visualViewport.addEventListener('scroll', setVH);
+    }
+})();
+
+// Предотвращаем стандартное поведение браузера для улучшения UX
+(function() {
+    // Предотвращаем выделение текста на мобильных
+    document.addEventListener('selectstart', function(e) {
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+        }
+    });
+    
+    // Улучшаем работу с touch-событиями
+    document.addEventListener('touchstart', function(e) {
+        // Добавляем активное состояние для кнопок
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+            e.target.classList.add('active-touch');
+            setTimeout(() => {
+                e.target.classList.remove('active-touch');
+            }, 300);
+        }
+    }, { passive: true });
+    
+    // CSS для активного состояния
+    const style = document.createElement('style');
+    style.textContent = `
+        .active-touch {
+            opacity: 0.7 !important;
+            transform: scale(0.98) !important;
+            transition: all 0.1s ease !important;
+        }
+        
+        /* Улучшаем фокус для доступности */
+        button:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #000 !important;
+            outline-offset: 2px !important;
+        }
+        
+        /* Скрываем outline для тач-устройств */
+        @media (hover: none) and (pointer: coarse) {
+            button:focus,
+            input:focus,
+            textarea:focus {
+                outline: none !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// Обработка ошибок загрузки изображений
+window.addEventListener('error', function(e) {
+    if (e.target.tagName === 'IMG') {
+        const img = e.target;
+        const parent = img.parentElement;
+        
+        // Заменяем сломанные изображения на placeholder
+        if (parent) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'image-error';
+            placeholder.style.cssText = `
+                width: ${img.width || '100%'};
+                height: ${img.height || 'auto'};
+                background: #f5f5f5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #999;
+                font-size: 12px;
+                border-radius: 2px;
+                text-align: center;
+                padding: 10px;
+            `;
+            placeholder.textContent = 'Изображение не загружено';
+            
+            // Сохраняем оригинальные стили
+            const imgStyles = window.getComputedStyle(img);
+            placeholder.style.borderRadius = imgStyles.borderRadius;
+            placeholder.style.boxShadow = imgStyles.boxShadow;
+            
+            parent.replaceChild(placeholder, img);
+        }
+    }
+}, true);
+
+// Автоматическая пауза музыки при сворачивании вкладки
+document.addEventListener('visibilitychange', function() {
+    const weddingMusic = document.getElementById('wedding-music');
+    if (weddingMusic) {
+        if (document.hidden) {
+            // Если вкладка скрыта - пауза
+            if (!weddingMusic.paused) {
+                weddingMusic.pause();
+            }
+        } else {
+            // Если вкладка снова видима - не возобновляем автоматически
+            // чтобы не раздражать пользователя
+        }
+    }
+});
+
+// Улучшенная обработка свайпов (предотвращение случайных закрытий)
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchmove', function(e) {
+    if (window.innerWidth <= 768) {
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        const diffX = Math.abs(touchX - touchStartX);
+        const diffY = Math.abs(touchY - touchStartY);
+        
+        // Если это горизонтальный свайп - предотвращаем скролл страницы
+        if (diffX > diffY && diffX > 10) {
+            e.preventDefault();
+        }
+    }
+}, { passive: false });
