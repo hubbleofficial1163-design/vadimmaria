@@ -1788,7 +1788,10 @@ body::after {
     }
 }
 
-/* Модальные окна для подтверждения */
+
+
+
+/* ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ МОДАЛЬНЫХ ОКОН - ОПТИМАЛЬНАЯ ВЕРСИЯ */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -1802,6 +1805,8 @@ body::after {
     justify-content: center;
     padding: 20px;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
 }
 
 .modal-container {
@@ -1812,6 +1817,11 @@ body::after {
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .modal-header {
@@ -1820,6 +1830,10 @@ body::after {
     align-items: center;
     padding: 20px 25px;
     border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10;
 }
 
 .modal-header h3 {
@@ -1843,6 +1857,7 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .modal-close:hover {
@@ -1851,6 +1866,8 @@ body::after {
 
 .modal-content {
     padding: 25px;
+    /* ОСТАВЛЯЕМ обычный отступ, без дополнительного для кнопок */
+    padding-bottom: 25px;
 }
 
 .modal-step {
@@ -1902,6 +1919,10 @@ body::after {
     font-size: 15px;
     box-sizing: border-box;
     transition: border-color 0.3s;
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
+    transform: translateZ(0);
 }
 
 .form-input:focus, .form-textarea:focus {
@@ -2003,11 +2024,18 @@ body::after {
     margin-bottom: 0;
 }
 
+/* КНОПКИ - РАЗМЕЩАЕМ ВНУТРИ КОНТЕНТА, А НЕ ФИКСИРОВАННЫМИ */
 .form-buttons {
     display: flex;
     justify-content: space-between;
     gap: 15px;
     margin-top: 30px;
+    /* УБИРАЕМ фиксированное позиционирование */
+    position: static;
+    padding: 0;
+    background-color: transparent;
+    border-top: none;
+    box-shadow: none;
 }
 
 .modal-prev-btn, .modal-next-btn, .modal-submit-btn, .modal-close-btn {
@@ -2021,6 +2049,8 @@ body::after {
     cursor: pointer;
     text-align: center;
     transition: all 0.3s;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
 }
 
 .modal-prev-btn {
@@ -2091,51 +2121,399 @@ body::after {
     margin-bottom: 15px;
 }
 
-/* Адаптивность модальных окон */
-@media only screen and (max-width: 480px) {
+/* ОПТИМАЛЬНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ - БЕЗ ПОЛНОЭКРАННОГО РЕЖИМА */
+@media only screen and (max-width: 768px) {
+    .modal-overlay {
+        padding: 20px;
+        align-items: center;
+        justify-content: center;
+        /* Разрешаем прокрутку если контент не помещается */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .modal-container {
-        max-width: 100%;
-        max-height: 95vh;
+        width: 100%;
+        max-width: 400px;
+        max-height: 90vh;
+        border-radius: 10px;
+        margin: 0;
+        display: block;
+        /* Центрируем модальное окно */
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        overflow: hidden;
     }
     
     .modal-header {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 10;
         padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        flex-shrink: 0;
+        /* Используем безопасные зоны */
+        padding-top: 15px;
+        padding-left: 20px;
+        padding-right: 20px;
     }
     
     .modal-content {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 20px;
+        /* ВОССТАНАВЛИВАЕМ нормальные отступы */
+        padding-bottom: 20px;
+        min-height: auto;
+        position: relative;
+        max-height: calc(90vh - 70px); /* Отнимаем высоту заголовка */
+    }
+    
+    .modal-step {
+        min-height: auto;
+        padding-bottom: 0;
+    }
+    
+    .modal-step.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-input, .form-textarea {
+        font-size: 16px !important;
+        padding: 14px 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background-color: white;
+        -webkit-appearance: none;
+        appearance: none;
+        transform: translateZ(0);
+        will-change: transform;
+    }
+    
+    /* Специальные стили для полей ввода на iOS */
+    input[type="text"],
+    input[type="tel"],
+    textarea {
+        font-size: 16px !important;
+        line-height: 1.4;
+    }
+    
+    /* Улучшенное отображение при фокусе */
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: #000;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        outline: none;
+    }
+    
+    .radio-group, .checkbox-group {
+        margin: 20px 0;
+    }
+    
+    .radio-option, .checkbox-option {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 0;
+    }
+    
+    .radio-option:last-child, .checkbox-option:last-child {
+        border-bottom: none;
+    }
+    
+    /* ВОССТАНАВЛИВАЕМ нормальное расположение кнопок */
+    .form-buttons {
+        position: static;
+        bottom: auto;
+        left: auto;
+        right: auto;
+        padding: 0;
+        background-color: transparent;
+        border-top: none;
+        z-index: auto;
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+        margin-bottom: 10px;
+        box-shadow: none;
+    }
+    
+    .modal-prev-btn, .modal-next-btn, .modal-submit-btn, .modal-close-btn {
+        flex: 1;
+        padding: 16px;
+        font-size: 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        -webkit-tap-highlight-color: transparent;
+        min-height: 52px;
+        margin: 0;
+    }
+    
+    /* Улучшаем отображение шага 6 с текстовой областью */
+    #step6 .form-textarea {
+        min-height: 100px;
+        line-height: 1.4;
+    }
+    
+    /* Анимации для переключения шагов */
+    .modal-step {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    /* Улучшаем доступность инпутов */
+    input[type="tel"], input[type="text"], textarea {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Улучшаем отображение чекбоксов и радиокнопок */
+    .radio-option:active, .checkbox-option:active {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Стили для предотвращения наложения клавиатуры */
+    body.keyboard-open .modal-container {
+        max-height: 60vh !important;
+        transition: max-height 0.3s ease;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media only screen and (max-width: 480px) {
+    .modal-overlay {
+        padding: 15px;
+    }
+    
+    .modal-header {
+        padding: 12px 15px;
+    }
+    
+    .modal-content {
+        padding: 15px;
+        padding-bottom: 15px;
+        max-height: calc(90vh - 60px);
+    }
+    
+    .modal-step h4 {
+        font-size: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-input, .form-textarea {
+        padding: 12px 14px;
     }
     
     .form-buttons {
-        flex-direction: column;
+        margin-top: 25px;
+        margin-bottom: 5px;
     }
     
-    .modal-prev-btn, .modal-next-btn, .modal-submit-btn {
-        width: 100%;
+    .modal-prev-btn, .modal-next-btn, .modal-submit-btn, .modal-close-btn {
+        padding: 14px;
+        min-height: 48px;
+        font-size: 14px;
+    }
+    
+    .radio-text, .checkbox-text {
+        font-size: 14px;
     }
 }
 
-/* Только для элементов формы в модальном окне */
-#confirmationModal button,
-#confirmationModal input,
-#confirmationModal textarea,
-#confirmationModal label {
+@media only screen and (max-width: 360px) {
+    .modal-overlay {
+        padding: 10px;
+    }
+    
+    .modal-header {
+        padding: 10px 12px;
+    }
+    
+    .modal-content {
+        padding: 12px;
+        padding-bottom: 12px;
+        max-height: calc(90vh - 55px);
+    }
+    
+    .form-buttons {
+        margin-top: 20px;
+        margin-bottom: 5px;
+    }
+    
+    .modal-prev-btn, .modal-next-btn, .modal-submit-btn, .modal-close-btn {
+        padding: 12px;
+        min-height: 44px;
+        font-size: 13px;
+    }
+}
+
+/* Специальные стили для iOS */
+@supports (-webkit-touch-callout: none) {
+    /* Предотвращаем масштабирование текста в iOS */
+    input, textarea {
+        font-size: 16px !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Улучшаем поведение при фокусе */
+    input:focus, textarea:focus {
+        font-size: 16px !important;
+    }
+}
+
+/* Защита от "дерганий" при фокусе - улучшенная версия */
+input:focus, textarea:focus {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Убираем стандартное выделение при фокусе на мобильных */
-@media (hover: none) and (pointer: coarse) {
-    #confirmationModal button:focus,
-    #confirmationModal input:focus,
-    #confirmationModal textarea:focus {
-        outline: none;
-        box-shadow: none;
+/* Улучшение доступности для скринридеров */
+@media (prefers-reduced-motion: reduce) {
+    .modal-step,
+    .modal-overlay,
+    .modal-container {
+        transition: none !important;
     }
 }
 
-.waiting-text-container {
-    top: calc(var(--svh, 1svh) * 85);
+/* Предотвращаем синее выделение при тапе на iOS */
+button, input, textarea {
+    -webkit-tap-highlight-color: transparent;
 }
+
+/* Класс для блокировки прокрутки страницы при открытой модалке */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* ДОПОЛНИТЕЛЬНЫЕ ФИКСЫ ДЛЯ МОБИЛЬНЫХ КЛАВИАТУР */
+/* Стили для адаптации модального окна при открытой клавиатуре */
+@media only screen and (max-height: 600px) {
+    .modal-container {
+        max-height: 80vh;
+    }
+    
+    .modal-content {
+        max-height: calc(80vh - 70px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .form-buttons {
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+}
+
+/* Для горизонтальной ориентации на мобильных */
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+    .modal-container {
+        max-height: 85vh;
+        max-width: 90%;
+    }
+    
+    .modal-content {
+        max-height: calc(85vh - 70px);
+        padding: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-buttons {
+        margin-top: 15px;
+    }
+}
+
+/* Улучшаем скроллинг внутри модального окна */
+.modal-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ФИКС ДЛЯ ТЕЛЕФОНА НА ШАГЕ 2 - УСТРАНЕНИЕ СКАЧКОВ */
+#phone {
+    /* Предотвращаем дергания */
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Улучшаем производительность */
+    contain: content;
+}
+
+/* Улучшаем внешний вид при фокусе на телефоне */
+#phone:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    outline: none;
+    /* Убираем стандартное выделение iOS */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Стили для предотвращения наложения текста */
+.modal-step {
+    /* Гарантируем, что контент не будет накладываться */
+    min-height: min-content;
+}
+
+/* Улучшаем отступы для длинных форм */
+#step6 .info-box + .checkbox-group {
+    margin-top: 25px;
+}
+
+#step6 .checkbox-group + .form-group {
+    margin-top: 25px;
+}
+
+/* Обеспечиваем, что кнопки всегда видны */
+.modal-step:last-child .form-buttons {
+    margin-bottom: 20px;
+}
+
+
+
+
 /* Zero секция */
 .zero-section {
     position: fixed;
