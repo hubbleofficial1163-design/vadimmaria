@@ -435,12 +435,13 @@ body::after {
 
 /* Шрифт "ждем вас на свадьбе" */
 .waiting-title {
-    font-family: 'Great Vibes', cursive;
-    font-size: 40px;
-    font-weight: 400;
-    margin-bottom: 40px;
-    letter-spacing: 2.5px;
+    font-family: 'Roboto', sans-serif; /* ИЗМЕНЕНО: было 'Great Vibes', cursive */
+    font-weight: 700; /* ИЗМЕНЕНО: было 400 */
+    font-size: 28px; /* ИЗМЕНЕНО: было 40px */
+    margin-bottom: 25px; /* ИЗМЕНЕНО: было 40px */
+    letter-spacing: 2px; /* ИЗМЕНЕНО: было 2.5px */
     color: #000;
+    text-transform: uppercase; /* ДОБАВЛЕНО: как у других заголовков */
 }
 
 .final-photo-container {
@@ -461,7 +462,7 @@ body::after {
     font-size: 24px; /* Уменьшил размер */
     font-weight: 400;
     letter-spacing: 1.5px;
-    margin-top: 8px;
+    margin-top: 5px;
     color: #000;
 }
 
@@ -698,11 +699,13 @@ body::after {
     .oval-photo-frame.couple-final {
         width: 240px;
         height: 320px;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
     }
     
     .waiting-title {
-        font-size: 34px;
+        font-size: 24px; /* ИЗМЕНЕНО: было 34px */
+        margin-bottom: 20px; /* Подгоняем под новый размер */
+        letter-spacing: 1.5px; /* Немного уменьшаем интервал */
     }
     
     .section-title {
@@ -764,13 +767,15 @@ body::after {
     }
     
     .oval-photo-frame.couple-final {
-        width: 220px;
-        height: 300px;
-        margin-bottom: 6px;
+        width: 280px;
+        height: 360px;
+        margin-bottom: 3px;
     }
     
     .waiting-title {
-        font-size: 30px;
+        font-size: 22px; /* ИЗМЕНЕНО: было 30px */
+        margin-bottom: 18px;
+        letter-spacing: 1px;
     }
     
     .section-title {
@@ -923,11 +928,13 @@ body::after {
     .oval-photo-frame.couple-final {
         width: 200px;
         height: 280px;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
     }
     
     .waiting-title {
-        font-size: 26px;
+        font-size: 20px; /* ИЗМЕНЕНО: было 26px */
+        margin-bottom: 16px;
+        letter-spacing: 0.5px;
     }
     
     .photo-name {
