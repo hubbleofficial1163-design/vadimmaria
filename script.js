@@ -244,6 +244,112 @@ document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = document.getElementById('phone');
     const messageInput = document.getElementById('message');
     
+    // Переменные для управления положением модального окна
+    let isKeyboardVisible = false;
+    let originalModalPosition = 0;
+    
+    // Функция для корректировки положения модального окна
+    function adjustModalPosition() {
+        if (!isKeyboardVisible) return;
+        
+        const modalContainer = document.querySelector('.modal-container');
+        if (!modalContainer) return;
+        
+        // Получаем активный инпут
+        const activeInput = document.activeElement;
+        if (!activeInput || !['INPUT', 'TEXTAREA'].includes(activeInput.tagName)) return;
+        
+        // Получаем позицию инпута относительно окна
+        const inputRect = activeInput.getBoundingClientRect();
+        const modalRect = modalContainer.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        
+        // Если инпут находится под клавиатурой
+        if (inputRect.bottom > windowHeight / 2) {
+            // Сдвигаем модальное окно вверх
+            const offset = inputRect.bottom - (windowHeight / 2) + 50;
+            modalContainer.style.transform = `translateY(-${offset}px)`;
+        }
+    }
+    
+    // Обработка появления/скрытия клавиатуры
+    function handleKeyboardVisibility(visible) {
+        isKeyboardVisible = visible;
+        const modalContainer = document.querySelector('.modal-container');
+        
+        if (visible) {
+            // Сохраняем исходную позицию
+            originalModalPosition = modalContainer.style.transform || 'translateY(0)';
+            
+            // Даем небольшую задержку для появления клавиатуры
+            setTimeout(adjustModalPosition, 100);
+            
+            // Также подписываемся на событие прокрутки
+            modalContainer.addEventListener('scroll', adjustModalPosition);
+        } else {
+            // Возвращаем исходную позицию
+            modalContainer.style.transform = originalModalPosition;
+            
+            // Убираем обработчик прокрутки
+            modalContainer.removeEventListener('scroll', adjustModalPosition);
+            
+            // Сбрасываем фокус с инпута если нужно
+            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                document.activeElement.blur();
+            }
+        }
+    }
+    
+    // Определяем появление/скрытие клавиатуры через изменение размера окна
+    let previousWindowHeight = window.innerHeight;
+    
+    window.addEventListener('resize', function() {
+        const currentHeight = window.innerHeight;
+        
+        // Если высота окна уменьшилась более чем на 150px - появилась клавиатура
+        if (currentHeight < previousWindowHeight - 150) {
+            handleKeyboardVisibility(true);
+        }
+        // Если высота окна восстановилась - клавиатура скрылась
+        else if (currentHeight > previousWindowHeight + 100) {
+            handleKeyboardVisibility(false);
+        }
+        
+        previousWindowHeight = currentHeight;
+    });
+    
+    // Также отслеживаем фокус на полях ввода
+    phoneInput.addEventListener('focus', function() {
+        // Фокусируем на элементе и прокручиваем к нему
+        setTimeout(() => {
+            this.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            adjustModalPosition();
+        }, 300);
+    });
+    
+    messageInput.addEventListener('focus', function() {
+        setTimeout(() => {
+            this.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            adjustModalPosition();
+        }, 300);
+    });
+    
+    // При закрытии модального окна сбрасываем все трансформации
+    function resetModalPosition() {
+        const modalContainer = document.querySelector('.modal-container');
+        if (modalContainer) {
+            modalContainer.style.transform = 'translateY(0)';
+            modalContainer.removeEventListener('scroll', adjustModalPosition);
+        }
+        isKeyboardVisible = false;
+    }
+    
     // Маска для телефона
     phoneInput.addEventListener('input', function(e) {
         let value = e.target.value.replace(/\D/g, '');
@@ -277,6 +383,15 @@ document.addEventListener('DOMContentLoaded', function() {
             step.classList.remove('active');
         });
         stepToShow.classList.add('active');
+        
+        // Прокручиваем к верхней части модального окна при смене шага
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.scrollTop = 0;
+        }
+        
+        // Сбрасываем позицию при смене шага
+        resetModalPosition();
     }
     
     // Валидация шага 1
@@ -351,68 +466,65 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Отправка формы
     submitBtn.addEventListener('click', function() {
-    if (validateStep6()) {
-        // Сбор данных формы
-        const formData = {
-        lastName: lastNameInput.value.trim(),
-        firstName: firstNameInput.value.trim(),
-        phone: phoneInput.value,
-        food: document.querySelector('input[name="food"]:checked').value,
-        alcohol: document.querySelector('input[name="alcohol"]:checked').value,
-        hotel: document.querySelector('input[name="hotel"]:checked').value,
-        hotelInfo: hotelInfoCheckbox.checked,
-        message: messageInput.value.trim()
-        };
-        
-        // Отправляем данные на сервер (Apps Script)
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbx9f8YA8RBDU-Xr94AYGs3LpWjiIN7bcgKCuUGX8hKpnhTwWgucRmo7pw4p7zrAdtknmg/exec'; // Замените на ваш URL
-        
-        // Показываем индикатор загрузки
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Отправка...';
-        
-        // Отправка данных на сервер
-        fetch(scriptUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-        if (data.success) {
-            // Показать экран успеха
-            showStep(successStep);
+        if (validateStep6()) {
+            // Сбор данных формы
+            const formData = {
+                lastName: lastNameInput.value.trim(),
+                firstName: firstNameInput.value.trim(),
+                phone: phoneInput.value,
+                food: document.querySelector('input[name="food"]:checked').value,
+                alcohol: document.querySelector('input[name="alcohol"]:checked').value,
+                hotel: document.querySelector('input[name="hotel"]:checked').value,
+                hotelInfo: hotelInfoCheckbox.checked,
+                message: messageInput.value.trim()
+            };
             
-            // Обновляем сообщение успеха
-            const successMessage = document.querySelector('#successStep p:first-of-type');
-            if (successMessage && data.guestName) {
-            successMessage.textContent = `Спасибо, ${data.guestName}! Подтверждение отправлено!`;
-            }
-        } else {
-            alert('Ошибка при отправке данных: ' + data.message);
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Отправить подтверждение';
+            // Отправляем данные на сервер (Apps Script)
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbx9f8YA8RBDU-Xr94AYGs3LpWjiIN7bcgKCuUGX8hKpnhTwWgucRmo7pw4p7zrAdtknmg/exec'; // Замените на ваш URL
+            
+            // Показываем индикатор загрузки
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
+            
+            // Отправка данных на сервер
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Показать экран успеха
+                    showStep(successStep);
+                    
+                    // Обновляем сообщение успеха
+                    const successMessage = document.querySelector('#successStep p:first-of-type');
+                    if (successMessage && data.guestName) {
+                        successMessage.textContent = `Спасибо, ${data.guestName}! Подтверждение отправлено!`;
+                    }
+                } else {
+                    alert('Ошибка при отправке данных: ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Отправить подтверждение';
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения. Проверьте интернет и попробуйте снова.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить подтверждение';
+            });
         }
-        })
-        .catch(error => {
-        console.error('Ошибка:', error);
-        alert('Ошибка соединения. Проверьте интернет и попробуйте снова.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Отправить подтверждение';
-        
-        // Фолбэк: все равно показываем экран успеха для демонстрации
-        // В реальном приложении можно удалить эту строку
-        // showStep(successStep);
-        });
-    }
     });
     
     // Закрытие модального окна
     function closeModal() {
         modalOverlay.style.display = 'none';
         document.body.style.overflow = 'auto';
+        resetModalPosition();
     }
     
     modalClose.addEventListener('click', closeModal);
@@ -439,6 +551,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Показать модальное окно
         modalOverlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        
+        // Установить фокус на первое поле
+        setTimeout(() => {
+            lastNameInput.focus();
+        }, 300);
     });
     
     // Закрытие по Escape
@@ -447,6 +564,13 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModal();
         }
     });
+    
+    // Предотвращаем прокрутку страницы при открытом модальном окне
+    modalOverlay.addEventListener('touchmove', function(e) {
+        if (modalOverlay.style.display === 'flex') {
+            e.preventDefault();
+        }
+    }, { passive: false });
 });
 
 // Предотвращение прыжков контента на мобильных
@@ -591,4 +715,3 @@ setTimeout(() => {
         localStorage.removeItem('musicPlaying')
     }
 }, 1800000); // 30 минут = 1800000 мс
-
